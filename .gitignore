@@ -6,3 +6,5 @@ pipex
 pipex-tester
 obj
 obj_b
+pipex*
+PipexTester

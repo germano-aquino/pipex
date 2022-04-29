@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:43 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/20 22:22:00 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/04/23 15:41:34 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	main(int argc, char *argv[], char *envp[])
 	t_commands	cmd;
 
 	if (argc < 5)
-		ft_exit(NULL, "Number of parameters is wrong.\n", NULL, 1);
+		ft_exit(NULL, "Number of parameters is wrong.\n", NULL, 0);
 	ft_init_cmd(argc, argv, &cmd);
 	cmd.is_hd = ft_here_doc(&cmd, argv, argc);
 	ft_check_params(argc, argv, envp, &cmd);

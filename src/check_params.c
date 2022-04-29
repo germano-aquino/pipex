@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:40 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/20 23:10:35 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/04/24 00:32:03 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ static void	ft_check_file_exists(int argc, char *argv[], t_commands *cmd)
 	if (access(argv[1], F_OK | R_OK) == -1)
 	{
 		perror(argv[1]);
-		cmd->err = 1;
+		cmd->bad_in = 1;
 		if (access(argv[1], F_OK) == -1)
 			cmd->ext_val = 1;
 	}
@@ -69,7 +69,7 @@ static void	ft_check_file_exists(int argc, char *argv[], t_commands *cmd)
 		if (fd == -1 || access(argv[argc - 1], W_OK) == -1)
 		{
 			perror(argv[argc - 1]);
-			cmd->err = 1;
+			cmd->bad_out = 1;
 			cmd->ext_val = 1;
 		}
 		close(fd);
@@ -88,7 +88,6 @@ int	ft_check_cmd_exists(char *argv, char *path[], char **cmd_path, \
 	if (*cmd_path == NULL)
 	{
 		free(temp);
-		cmd->err = 1;
 		ft_printf("%s: command not found\n", split[0]);
 		ft_free_2d_char_ptr(&split);
 		return (0);
@@ -101,10 +100,10 @@ int	ft_check_cmd_exists(char *argv, char *path[], char **cmd_path, \
 void	ft_check_params(int argc, char *argv[], char *envp[], t_commands *cmd)
 {
 	if (argc != 5)
-		ft_exit(cmd, "Number of parameters is wrong.\n", NULL, 1);
+		ft_exit(cmd, "Number of parameters is wrong.\n", 1, 0);
 	cmd->path = ft_get_path(envp);
 	if (cmd->path == NULL)
-		ft_exit(cmd, "Environment variable PATH does not exist.\n", NULL, 1);
+		ft_exit(cmd, "Environment variable PATH does not exist.\n", 1, 1);
 	ft_check_file_exists(argc, argv, cmd);
 	if (!ft_check_cmd_exists(argv[2], cmd->path, &cmd->cmd1, cmd))
 		cmd->ext_val = 0;
