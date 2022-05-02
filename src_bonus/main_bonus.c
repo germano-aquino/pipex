@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:43 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/23 15:41:34 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/02 00:27:30 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ void	ft_init_cmd(int argc, char *argv[], t_commands *cmd)
 	cmd->args[cmd->n_cmd] = NULL;
 	cmd->cmd_path[cmd->n_cmd] = NULL;
 	cmd->path = NULL;
+	cmd->bad_in = 0;
+	cmd->bad_out = 0;
+	cmd->inval_cmd_flag = 0;
 	cmd->err = 0;
 	cmd->ext_val = 0;
 	cmd->is_hd = 0;
@@ -47,8 +50,17 @@ int	main(int argc, char *argv[], char *envp[])
 
 void	ft_exit(t_commands *cmd, const char *message, char **vars, int ext_val)
 {
+	int	last_cmd_not_exist;
+
 	if (cmd != NULL)
+	{
+		last_cmd_not_exist = cmd->inval_cmd_flag & 1 << (cmd->n_cmd - 1);
+		if (cmd->bad_out || cmd->bad_in == 1)
+			ext_val = 1;
+		else if (last_cmd_not_exist)
+			ext_val = 127;
 		ft_free_cmd(cmd);
+	}
 	if (message != NULL)
 	{
 		ft_printf("%s", message);

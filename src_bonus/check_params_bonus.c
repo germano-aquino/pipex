@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:40 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/20 22:20:15 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/01 23:58:51 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,10 +56,10 @@ static void	ft_check_file_exists(int argc, char *argv[], t_commands *cmd)
 
 	if (!cmd->is_hd && access(argv[1], F_OK | R_OK) == -1)
 	{
+		cmd->bad_in = 1;
 		perror(argv[1]);
-		cmd->err = 1;
 		if (access(argv[1], F_OK) == -1)
-			cmd->ext_val = 1;
+			cmd->bad_in++;
 	}
 	if (access(argv[argc - 1], F_OK | W_OK) == -1)
 	{
@@ -67,15 +67,14 @@ static void	ft_check_file_exists(int argc, char *argv[], t_commands *cmd)
 		if (fd == -1 || access(argv[argc - 1], W_OK) == -1)
 		{
 			perror(argv[argc - 1]);
-			cmd->err = 1;
-			cmd->ext_val = 1;
+			cmd->bad_out = 1;
 		}
 		close(fd);
 	}
 	cmd->outfile = ft_strdup(argv[argc - 1]);
 }
 
-int	ft_check_cmd_exists(char *argv, char *path[], char **cmd_path, \
+void	ft_check_cmd_exists(char *argv, int i, char **cmd_path, \
 	t_commands *cmd)
 {
 	char	**split;
@@ -83,24 +82,20 @@ int	ft_check_cmd_exists(char *argv, char *path[], char **cmd_path, \
 
 	split = ft_split(argv, ' ');
 	temp = ft_strjoin("/", split[0]);
-	*cmd_path = ft_get_cmd_path(path, temp);
+	*cmd_path = ft_get_cmd_path(cmd->path, temp);
 	free(temp);
 	if (*cmd_path == NULL)
 	{
-		cmd->err = 1;
+		cmd->inval_cmd_flag |= 1 << i;
 		ft_putstr_fd(split[0], 2);
 		ft_putstr_fd(": command not found\n", 2);
-		ft_free_2d_char_ptr(&split);
-		return (0);
 	}
 	ft_free_2d_char_ptr(&split);
-	return (1);
 }
 
 void	ft_check_params(int argc, char *argv[], char *envp[], t_commands *cmd)
 {
 	int	i;
-	int	cmd_exists;
 
 	cmd->path = ft_get_path(envp);
 	if (cmd->path == NULL)
@@ -110,14 +105,8 @@ void	ft_check_params(int argc, char *argv[], char *envp[], t_commands *cmd)
 	while (++i < cmd->n_cmd)
 	{
 		if (!cmd->is_hd)
-			cmd_exists = ft_check_cmd_exists(argv[2 + i], cmd->path, \
-				&cmd->cmd_path[i], cmd);
+			ft_check_cmd_exists(argv[2 + i], i, &cmd->cmd_path[i], cmd);
 		else
-			cmd_exists = ft_check_cmd_exists(argv[3 + i], cmd->path, \
-				&cmd->cmd_path[i], cmd);
-		if (!i && !cmd_exists)
-			cmd->ext_val = 0;
-		else if (!cmd_exists)
-			cmd->ext_val = 127;
+			ft_check_cmd_exists(argv[3 + i], i, &cmd->cmd_path[i], cmd);
 	}
 }

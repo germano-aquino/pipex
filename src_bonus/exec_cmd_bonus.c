@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/09 18:32:23 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/20 22:58:27 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/02 00:12:03 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ void	ft_exec_cmd(t_commands *cmd, char *argv[], int i, int *curr_fd)
 		dup2(fd[0], *curr_fd);
 		close(fd[0]);
 		close(fd[1]);
-		wait(NULL);
+		waitpid(pid, &cmd->ext_val, WNOHANG);
 	}
 }
 
@@ -93,6 +93,7 @@ void	ft_exec_cmds(t_commands *cmd, char *argv[])
 {
 	int	curr_fd;
 	int	i;
+	int	flag;
 
 	i = -1;
 	if (cmd->is_hd)
@@ -100,6 +101,13 @@ void	ft_exec_cmds(t_commands *cmd, char *argv[])
 	else
 		curr_fd = open(argv[1], O_RDONLY);
 	while (++i < cmd->n_cmd)
-		ft_exec_cmd(cmd, argv, i, &curr_fd);
+	{
+		flag = cmd->inval_cmd_flag & (1 << i);
+		if (!i && cmd->bad_in || flag)
+			curr_fd = -1;
+		else if (!flag && !(i == cmd->n_cmd - 1 && cmd->bad_out))
+			ft_exec_cmd(cmd, argv, i, &curr_fd);
+	}
+	cmd->ext_val = WEXITSTATUS(cmd->ext_val);
 	close(curr_fd);
 }

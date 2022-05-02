@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:33 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/20 21:19:21 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/01 20:53:33 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ typedef struct s_commands
 	char	**path;
 	char	*outfile;
 	char	*limiter;
+	int		inval_cmd_flag;
+	int		bad_in;
+	int		bad_out;
 	int		is_hd;
 	int		n_cmd;
 	int		err;
