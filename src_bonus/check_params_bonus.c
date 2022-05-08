@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:40 by grenato-          #+#    #+#             */
-/*   Updated: 2022/05/01 23:58:51 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/08 01:33:07 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,17 +61,15 @@ static void	ft_check_file_exists(int argc, char *argv[], t_commands *cmd)
 		if (access(argv[1], F_OK) == -1)
 			cmd->bad_in++;
 	}
-	if (access(argv[argc - 1], F_OK | W_OK) == -1)
+	if (!access(argv[argc - 1], F_OK | W_OK))
+		unlink(argv[argc - 1]);
+	if (access(argv[argc - 1], F_OK) == -1)
+		cmd->out_fd = open(argv[argc - 1], O_WRONLY | O_CREAT, 0666);
+	if (access(argv[argc - 1], W_OK) == -1 || cmd->out_fd == -1)
 	{
-		fd = open(argv[argc - 1], O_CREAT, 0666);
-		if (fd == -1 || access(argv[argc - 1], W_OK) == -1)
-		{
-			perror(argv[argc - 1]);
-			cmd->bad_out = 1;
-		}
-		close(fd);
+		perror(argv[argc - 1]);
+		cmd->bad_out = 1;
 	}
-	cmd->outfile = ft_strdup(argv[argc - 1]);
 }
 
 void	ft_check_cmd_exists(char *argv, int i, char **cmd_path, \
@@ -82,7 +80,10 @@ void	ft_check_cmd_exists(char *argv, int i, char **cmd_path, \
 
 	split = ft_split(argv, ' ');
 	temp = ft_strjoin("/", split[0]);
-	*cmd_path = ft_get_cmd_path(cmd->path, temp);
+	if (access(split[0], X_OK | F_OK) == 0)
+		*cmd_path = ft_strdup(split[0]);
+	else
+		*cmd_path = ft_get_cmd_path(cmd->path, temp);
 	free(temp);
 	if (*cmd_path == NULL)
 	{

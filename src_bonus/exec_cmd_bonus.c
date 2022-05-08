@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/09 18:32:23 by grenato-          #+#    #+#             */
-/*   Updated: 2022/05/02 00:12:03 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/08 02:24:00 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,74 +40,67 @@ int	ft_here_doc(t_commands *cmd, char *argv[], int argc)
 	return (0);
 }
 
-void	child_task(t_commands *cmd, int i, int *pipe_fd, int *curr_fd)
+void	child_task(t_commands *cmd, t_workspace *vars, char *envp[])
 {
-	int	out_fd;
-
-	dup2(*curr_fd, STDIN_FILENO);
-	close(pipe_fd[0]);
-	if ((!cmd->err && !i) || (i && (!cmd->err || cmd->ext_val != 127)))
+	dup2(vars->curr_fd, STDIN_FILENO);
+	close(vars->fd[0]);
+	if (vars->i == cmd->n_cmd - 1)
 	{
-		if (i == cmd->n_cmd - 1)
-		{
-			close(pipe_fd[1]);
-			out_fd = open(cmd->outfile, O_WRONLY);
-			dup2(out_fd, STDOUT_FILENO);
-			close(out_fd);
-		}
-		else
-		{
-			dup2(pipe_fd[1], STDOUT_FILENO);
-			close(pipe_fd[1]);
-		}
-		if (execve(cmd->cmd_path[i], cmd->args[i], NULL) == -1)
-			ft_exit(cmd, "Cannot exec command.\n", NULL, 1);
+		close(vars->fd[1]);
+		dup2(cmd->out_fd, STDOUT_FILENO);
+		close(cmd->out_fd);
 	}
-	close(pipe_fd[1]);
+	else
+	{
+		dup2(vars->fd[1], STDOUT_FILENO);
+		close(vars->fd[1]);
+	}
+	if (execve(cmd->cmd_path[vars->i], cmd->args[vars->i], envp) == -1)
+		ft_exit(cmd, "Cannot exec command.\n", NULL, 1);
+	close(vars->fd[1]);
 	ft_exit(cmd, NULL, NULL, 1);
 }
 
-void	ft_exec_cmd(t_commands *cmd, char *argv[], int i, int *curr_fd)
+void	ft_exec_cmd(t_commands *cmd, char *argv[], char *envp[], \
+			t_workspace *vars)
 {
-	int	fd[2];
 	int	pid;
 
-	if (pipe(fd) == -1)
+	if (pipe(vars->fd) == -1)
 		ft_exit(cmd, "Cannot create pipe.\n", NULL, 1);
-	if (*curr_fd == -1)
-		*curr_fd = fd[0];
+	if (vars->curr_fd == -1)
+		vars->curr_fd = vars->fd[0];
 	pid = fork();
 	if (pid == 0)
-		child_task(cmd, i, fd, curr_fd);
+		child_task(cmd, vars, envp);
 	else
 	{
-		close(*curr_fd);
-		dup2(fd[0], *curr_fd);
-		close(fd[0]);
-		close(fd[1]);
-		waitpid(pid, &cmd->ext_val, WNOHANG);
+		close(vars->curr_fd);
+		dup2(vars->fd[0], vars->curr_fd);
+		close(vars->fd[0]);
+		close(vars->fd[1]);
 	}
 }
 
-void	ft_exec_cmds(t_commands *cmd, char *argv[])
+void	ft_exec_cmds(t_commands *cmd, char *argv[], char *envp[])
 {
-	int	curr_fd;
-	int	i;
-	int	flag;
+	t_workspace	vars;
+	int			flag;
 
-	i = -1;
+	vars.i = -1;
 	if (cmd->is_hd)
-		curr_fd = cmd->is_hd;
+		vars.curr_fd = cmd->is_hd;
 	else
-		curr_fd = open(argv[1], O_RDONLY);
-	while (++i < cmd->n_cmd)
+		vars.curr_fd = open(argv[1], O_RDONLY);
+	while (++vars.i < cmd->n_cmd)
 	{
-		flag = cmd->inval_cmd_flag & (1 << i);
-		if (!i && cmd->bad_in || flag)
-			curr_fd = -1;
-		else if (!flag && !(i == cmd->n_cmd - 1 && cmd->bad_out))
-			ft_exec_cmd(cmd, argv, i, &curr_fd);
+		flag = cmd->inval_cmd_flag & (1 << vars.i);
+		if (!vars.i && (cmd->bad_in || flag))
+			vars.curr_fd = -1;
+		else if (!flag && !(vars.i == (cmd->n_cmd - 1) && cmd->bad_out))
+			ft_exec_cmd(cmd, argv, envp, &vars);
 	}
+	wait(&cmd->ext_val);
 	cmd->ext_val = WEXITSTATUS(cmd->ext_val);
-	close(curr_fd);
+	close(vars.curr_fd);
 }

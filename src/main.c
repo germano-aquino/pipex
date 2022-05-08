@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/05 20:34:43 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/24 00:33:45 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/08 02:18:52 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ void	ft_init_cmd(t_commands *cmd)
 	cmd->args1 = NULL;
 	cmd->args2 = NULL;
 	cmd->path = NULL;
+	cmd->out_fd = 0;
 	cmd->bad_in = 0;
 	cmd->bad_out = 0;
 	cmd->ext_val = 0;
@@ -39,14 +40,14 @@ int	main(int argc, char *argv[], char *envp[])
 void	ft_exit(t_commands *cmd, const char *message, int bad_params, \
 	int ext_val)
 {
-	if (cmd->bad_out)
-		ext_val = 1;
-	else if (cmd->cmd2 == NULL && !bad_params)
-		ext_val = 127;
-	else
-		ext_val = ext_val;
 	if (cmd != NULL)
+	{
+		if (cmd->bad_out)
+			ext_val = 1;
+		else if (cmd->cmd2 == NULL && !bad_params)
+			ext_val = 127;
 		ft_free_cmd(cmd);
+	}
 	if (message != NULL)
 		ft_printf("%s", message);
 	exit(ext_val);

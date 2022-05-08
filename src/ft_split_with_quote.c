@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/07 19:46:36 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/12 22:37:05 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/08 02:00:22 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,15 @@ static int	ft_get_number_of_strings(const char *s, char c)
 		return (-1);
 	while (s[i] != '\0')
 	{
-		if (s[i] == '\'')
-			while (s[i + 1] != '\'' && s[i + 1] != '\0')
-				i++;
 		if (!new_string_was_counted && s[i] != c)
 		{
 			counter++;
 			new_string_was_counted = 1;
 		}
+		if (s[i] == '\'')
+			while (++i)
+				if (s[i] == '\'' || s[i] == '\0')
+					break ;
 		if (new_string_was_counted && s[i] == c)
 			new_string_was_counted = 0;
 		i++;

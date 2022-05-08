@@ -6,7 +6,7 @@
 /*   By: grenato- <grenato-@student.42sp.org.br     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/09 18:32:23 by grenato-          #+#    #+#             */
-/*   Updated: 2022/04/24 00:36:48 by grenato-         ###   ########.fr       */
+/*   Updated: 2022/05/08 01:56:40 by grenato-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,11 @@
 void	ft_exec_second_cmd(t_commands *cmd, int fd[2], char *argv[], \
 	char *envp[])
 {
-	int	out_fd;
-
 	close(fd[1]);
-	out_fd = open(argv[4], O_WRONLY);
-	dup2(out_fd, STDOUT_FILENO);
+	dup2(cmd->out_fd, STDOUT_FILENO);
 	dup2(fd[0], STDIN_FILENO);
 	close(fd[0]);
-	close(out_fd);
+	close(cmd->out_fd);
 	execve(cmd->cmd2, cmd->args2, envp);
 }
 
